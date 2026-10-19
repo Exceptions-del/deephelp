@@ -1,0 +1,15 @@
+Package: deephelp
+Type: Package
+Title: Translate R Help Pages to Chinese with DeepSeek
+Version: 0.3.0
+Authors@R: person("R", "User", email = "r.user@example.com", role = c("aut", "cre"))
+Description: Renders on-the-fly Simplified-Chinese translations of R help pages
+    in the help pane of RStudio or Positron, using the DeepSeek chat model with
+    reasoning (thinking mode) disabled for fast, low-cost, clean output. Works as
+    a drop-in replacement for '?' and 'help()'. Translations are cached on disk.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: httr, jsonlite, tools, utils
+Suggests: rstudioapi
+Config/roxygen2/version: 8.1.0

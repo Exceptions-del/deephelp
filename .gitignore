@@ -1,0 +1,14 @@
+# R / RStudio
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+*.Rcheck/
+.Rd2pdf*
+*.tar.gz
+*.tgz
+
+# OS
+.DS_Store
+Thumbs.db
