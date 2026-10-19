@@ -36,9 +36,9 @@
 
 ```r
 # 从 GitHub 安装
-remotes::install_github("<username>/deephelp")
+remotes::install_github("Exceptions-del/deephelp")
 # 或
-pak::pak("<username>/deephelp")
+pak::pak("Exceptions-del/deephelp")
 
 # 从本地源码目录安装
 install.packages("path/to/deephelp", repos = NULL, type = "source")
