@@ -1,5 +1,8 @@
 # deephelp
 
+[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](https://github.com/Exceptions-del/deephelp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 用 [DeepSeek](https://www.deepseek.com/) 把 R 帮助文档**即时翻译成中文**的 R 包。
 
 加载后，`?` 和 `help()` 会被无缝替换：`?lm`、`help("mean")`、`?dplyr::mutate` 会自动弹出**中文版帮助页**，显示在 **Help 面板**（支持 **RStudio** 与 **Positron**）。
