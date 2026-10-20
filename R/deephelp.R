@@ -54,8 +54,12 @@ deephelp_impl <- function(topic, package = NULL, lang = NULL, type = NULL, ...) 
 
 # Serialize a parsed Rd object back to Rd source text (used to show the
 # translated help in the Help pane via rstudioapi::previewRd()).
+#
+# tools:::as.character.Rd() is an unexported base tool; utils::getFromNamespace()
+# retrieves it at runtime without the ':::' operator in the source.
 rd_to_source <- function(rd) {
-  paste(tools:::as.character.Rd(rd, deparse = TRUE), collapse = "")
+  as_character_Rd <- utils::getFromNamespace("as.character.Rd", "tools")
+  paste(as_character_Rd(rd, deparse = TRUE), collapse = "")
 }
 
 # Write a translated Rd object into a minimal fake package layout
