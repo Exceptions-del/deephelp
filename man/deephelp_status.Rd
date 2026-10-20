@@ -9,3 +9,6 @@ deephelp_status()
 \description{
 Print the current configuration
 }
+\examples{
+deephelp_status()
+}

@@ -26,7 +26,7 @@ non-reasoning). Use `"deepseek-v4-pro"` for higher quality at higher cost.}
 
 \item{base_url}{API base URL. Defaults to `"https://api.deepseek.com"`.}
 
-\item{lang}{Target language. Defaults to `"简体中文"`.}
+\item{lang}{Target language. Defaults to \enc{简体中文}{Simplified Chinese}.}
 
 \item{cache}{Cache directory. `NULL` uses the default location; `""` disables
 caching; otherwise a directory path.}
