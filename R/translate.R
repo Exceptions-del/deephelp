@@ -35,12 +35,38 @@ rd_translate <- function(rd, lang, config) {
     return(rd)
   }
 
-  translated <- translate_batch(unlist(state$out), lang, config)
+  translated <- translate_batch_chunked(unlist(state$out), lang, config)
 
   state$mode <- "apply"
   state$i <- 0L
   state$translations <- translated
   rd_walk(rd, state)
+}
+
+# translate_batch() split by cumulative character count so each request stays
+# within the model's output-token limit. Large help pages (many/long prose
+# blocks) otherwise exceed max_tokens and DeepSeek truncates the JSON response.
+translate_batch_chunked <- function(texts, lang, config) {
+  n <- length(texts)
+  if (n == 0L) {
+    return(character(0))
+  }
+  out <- character(n)
+  budget <- 3000L
+  start <- 1L
+  cum <- 0L
+  for (i in seq_len(n)) {
+    cum <- cum + nchar(texts[i], type = "chars")
+    if (cum >= budget && i > start) {
+      out[start:i] <- translate_batch(texts[start:i], lang, config)
+      start <- i + 1L
+      cum <- 0L
+    }
+  }
+  if (start <= n) {
+    out[start:n] <- translate_batch(texts[start:n], lang, config)
+  }
+  out
 }
 
 rd_walk <- function(x, state) {
@@ -233,26 +259,35 @@ rebuild <- function(inline, translated, cjk_spacing = FALSE) {
   token_pat <- "\\[\\[(PARA|BR|INLINE:[0-9]+)\\]\\]"
 
   emit_text <- function(txt) {
-    txt <- trimws(txt)
+    # Drop leading whitespace and collapse internal runs, but keep a single
+    # trailing space so prose stays separated from a following inline macro
+    # (e.g. "such as \code{foo}" rather than "such as\code{foo}").
+    txt <- sub("^[ \t]+", "", txt, perl = TRUE)
+    txt <- gsub("[ \t]+", " ", txt, perl = TRUE)
     if (nzchar(txt)) {
       out[[length(out) + 1L]] <<- structure(txt, Rd_tag = "TEXT")
     }
   }
   emit_break <- function(blank) {
-    # Rd2HTML detects a paragraph break via isBlankLineRd(): the TEXT node must
-    # be a blank line (content starting with "\n") AND its srcref[2] (first
-    # byte) must equal 1. A soft line break is a plain "\n" node without srcref,
-    # which HTML renders as a single space.
-    #
-    # For a real paragraph break we emit TWO newlines ("\n\n"): this both lets
-    # Rd2HTML render a paragraph break AND survives Rd-source serialization
-    # (srcref is dropped when deparsing, so "\n" alone would collapse back to a
-    # soft break).
-    node <- structure(if (blank) "\n\n" else "\n", Rd_tag = "TEXT")
-    if (blank) {
-      attr(node, "srcref") <- structure(c(1L, 1L, 1L, 1L, 1L, 1L), class = "srcref")
+    # Merge the line break into the preceding TEXT node so that Rd-source
+    # serialization (tools:::as.character.Rd) keeps the newline embedded in the
+    # text. A standalone "\n" TEXT node gets deparsed as a bare newline that
+    # breaks unbraced constructs such as \item inside \itemize.
+    nl <- if (blank) "\n\n" else "\n"
+    n <- length(out)
+    if (n > 0L && identical(attr(out[[n]], "Rd_tag"), "TEXT")) {
+      prev <- sub("[ \t]+$", "", as.character(out[[n]]), perl = TRUE)
+      out[[n]] <<- structure(paste0(prev, nl), Rd_tag = "TEXT")
+      if (blank) {
+        attr(out[[n]], "srcref") <- structure(c(1L, 1L, 1L, 1L, 1L, 1L), class = "srcref")
+      }
+    } else {
+      node <- structure(nl, Rd_tag = "TEXT")
+      if (blank) {
+        attr(node, "srcref") <- structure(c(1L, 1L, 1L, 1L, 1L, 1L), class = "srcref")
+      }
+      out[[n + 1L]] <<- node
     }
-    out[[length(out) + 1L]] <<- node
   }
 
   m <- gregexpr(token_pat, translated, perl = TRUE)[[1L]]

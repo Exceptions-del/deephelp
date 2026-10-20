@@ -59,7 +59,12 @@ deephelp_impl <- function(topic, package = NULL, lang = NULL, type = NULL, ...) 
 # retrieves it at runtime without the ':::' operator in the source.
 rd_to_source <- function(rd) {
   as_character_Rd <- utils::getFromNamespace("as.character.Rd", "tools")
-  paste(as_character_Rd(rd, deparse = TRUE), collapse = "")
+  src <- paste(as_character_Rd(rd, deparse = TRUE), collapse = "")
+  # Rebuilt Rd nodes lose their srcref, so as.character.Rd() can deparse an
+  # unbraced \item (itemize bullet) as "\itemText" with no separator, which the
+  # parser then reads as an unknown macro. Restore the separating space (but not
+  # after \itemize).
+  gsub("\\\\item(?!ize)(?=[A-Za-z0-9])", "\\\\item ", src, perl = TRUE)
 }
 
 # Write a translated Rd object into a minimal fake package layout
