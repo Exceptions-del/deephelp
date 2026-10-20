@@ -7,7 +7,7 @@
 #' @param model Model name. Defaults to `"deepseek-flash"` (fast, cheap,
 #'   non-reasoning). Use `"deepseek-v4-pro"` for higher quality at higher cost.
 #' @param base_url API base URL. Defaults to `"https://api.deepseek.com"`.
-#' @param lang Target language. Defaults to \enc{简体中文}{Simplified Chinese}.
+#' @param lang Target language. Defaults to Simplified Chinese.
 #' @param cache Cache directory. `NULL` uses the default location; `""` disables
 #'   caching; otherwise a directory path.
 #' @param temperature Optional sampling temperature passed to the API.
