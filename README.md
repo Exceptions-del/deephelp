@@ -1,6 +1,6 @@
 # deephelp
 
-[![Version](https://img.shields.io/badge/version-0.3.2-blue.svg)](https://github.com/Exceptions-del/deephelp)
+[![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/Exceptions-del/deephelp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 用 [DeepSeek](https://www.deepseek.com/) 把 R 帮助文档**即时翻译成中文**的 R 包。
@@ -126,7 +126,7 @@ R_INCLUDE_DIR="D:/R-4.5.3/include"
 2. 用 `utils::help(..., help_type = "text")` 定位真正的 Rd 文件与包名（自动解析别名，如 `geom_col` → `geom_bar`）
 3. 用 `tools::Rd_db()` 得到已解析的 Rd 对象，只遍历并翻译文本节点，代码/链接/公式/用法一律保留；示例里的 `#` 注释单独翻译，字符串里的 `#` 会正确跳过
 4. 用 `[[PARA]]`/`[[BR]]` 标记保留段落与换行，翻译后按标记还原版式
-5. 所有文本去重后合并成**一次** DeepSeek 请求（JSON 对齐回填），结果写回解析树
+5. 文本去重后按字符数**分块**批量翻译（JSON 对齐回填）；超大页若某块响应被截断（超过输出 token 上限），会自动对半拆分重试，保证整页都被翻译，结果写回解析树
 6. 翻译后的解析树写入临时“伪包”目录，用 `rstudioapi::previewRd()` 显示到 Help 面板
 7. 按「包名/主题/版本/模型/语言」缓存到 `tools::R_user_dir("deephelp", "cache")`，二次查看零 token
 

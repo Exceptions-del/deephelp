@@ -1,7 +1,7 @@
 Package: deephelp
 Type: Package
 Title: Translate R Help Pages to Chinese with DeepSeek
-Version: 0.3.2
+Version: 0.3.3
 Authors@R: person("Shi", email = "1902186493@qq.com", role = c("aut", "cre"))
 Description: Renders on-the-fly Simplified-Chinese translations of R help pages
     in the help pane of RStudio or Positron, using the DeepSeek chat model with

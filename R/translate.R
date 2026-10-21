@@ -58,15 +58,44 @@ translate_batch_chunked <- function(texts, lang, config) {
   for (i in seq_len(n)) {
     cum <- cum + nchar(texts[i], type = "chars")
     if (cum >= budget && i > start) {
-      out[start:i] <- translate_batch(texts[start:i], lang, config)
+      out[start:i] <- translate_batch_robust(texts[start:i], lang, config)
       start <- i + 1L
       cum <- 0L
     }
   }
   if (start <= n) {
-    out[start:n] <- translate_batch(texts[start:n], lang, config)
+    out[start:n] <- translate_batch_robust(texts[start:n], lang, config)
   }
   out
+}
+
+# Run translate_batch() for one chunk. If the JSON response cannot be parsed
+# (DeepSeek truncated it at the output-token limit), split the chunk in half and
+# retry each part recursively. This keeps a single oversized chunk from leaving
+# the top of a large page untranslated while the rest of the page succeeds.
+translate_batch_robust <- function(texts, lang, config) {
+  if (length(texts) <= 1L) {
+    # Nothing left to split: translate directly (a parse failure warns normally).
+    return(translate_batch(texts, lang, config))
+  }
+  failed <- FALSE
+  tr <- withCallingHandlers(
+    translate_batch(texts, lang, config),
+    warning = function(w) {
+      if (grepl("could not parse", conditionMessage(w))) {
+        failed <<- TRUE
+        invokeRestart("muffleWarning")
+      }
+    }
+  )
+  if (failed) {
+    mid <- ceiling(length(texts) / 2L)
+    return(c(
+      translate_batch_robust(texts[seq_len(mid)], lang, config),
+      translate_batch_robust(texts[seq.int(mid + 1L, length(texts))], lang, config)
+    ))
+  }
+  tr
 }
 
 rd_walk <- function(x, state) {
