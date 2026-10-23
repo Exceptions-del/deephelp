@@ -17,7 +17,7 @@
 
 # Bump this whenever the translation prompt or logic changes, to invalidate
 # the on-disk cache.
-.dh$schema <- "v20"
+.dh$schema <- "v21"
 
 # Built-in statistics / R terminology glossary (English -> Simplified Chinese).
 # Applied to natural-language prose only; never to code or identifiers.

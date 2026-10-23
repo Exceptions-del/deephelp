@@ -1,5 +1,17 @@
 # Vignette translation --------------------------------------------------------
 
+# Inline elements: kept verbatim as [[INLINE:n]] placeholders inside a block's
+# flattened prose so the model sees a complete sentence, not fragments split by
+# inline <code>/<a>/<em> markup.
+.vignette_inline_tags <- c(
+  "a", "abbr", "b", "bdi", "bdo", "br", "cite", "code", "data", "dfn", "em",
+  "i", "img", "kbd", "mark", "q", "rp", "rt", "ruby", "s", "samp", "small",
+  "span", "strong", "sub", "sup", "time", "u", "var", "wbr", "math", "mjx-container"
+)
+
+# Block elements whose text must never be translated.
+.vignette_skip_tags <- c("script", "style", "pre")
+
 # Drop-in replacement for utils::vignette(): wrap the returned object(s) so
 # printing them routes through print.deephelp_vignette (which translates).
 shim_vignette <- function(topic, package = NULL, lib.loc = NULL, all = TRUE) {
@@ -74,46 +86,89 @@ translate_vignette_html <- function(html_file, cfg) {
   }
 
   doc <- xml2::read_html(html_file)
-  xpath <- paste0(
-    "//body//text()[",
-    "not(ancestor::pre) and not(ancestor::code) and ",
-    "not(ancestor::script) and not(ancestor::style) and ",
-    "not(ancestor::*[contains(@class, 'math')]) and ",
-    "not(ancestor::*[contains(@class, 'katex')]) and ",
-    "not(ancestor::*[contains(@class, 'mjx')])",
-    "]"
-  )
-  nodes <- xml2::xml_find_all(doc, xpath)
-  if (length(nodes) == 0L) {
+
+  # Translate at the level of leaf prose blocks (paragraphs, headings, list
+  # items, table cells), not individual text nodes. Translating node-by-node
+  # sends the model sentence *fragments* split by inline <code>/<a> markup,
+  # which makes it return interleaved English+Chinese. Flattening each block
+  # (inline elements as [[INLINE:n]] placeholders) keeps sentences whole.
+  blocks <- xml2::xml_find_all(doc, "//body//*[text()[normalize-space()]]")
+  nm <- xml2::xml_name(blocks)
+  blocks <- blocks[!(nm %in% .vignette_inline_tags) & !(nm %in% .vignette_skip_tags)]
+  if (length(blocks) == 0L) {
     out <- if (is.null(cfile)) tempfile(fileext = ".html") else cfile
     xml2::write_html(doc, out)
     return(out)
   }
 
-  raw <- xml2::xml_text(nodes)
-  trimmed <- trimws(raw)
-  keep <- nzchar(trimmed)
+  flats <- lapply(blocks, flatten_html_block)
+  texts <- vapply(flats, `[[`, character(1), "text")
+  keep <- nzchar(trimws(texts))
   if (any(keep)) {
     idx <- which(keep)
-    # HTML collapses internal whitespace (including the source line-wrapping
-    # newlines) to a single space when rendered, so normalize it before sending
-    # to the model. Raw multi-line fragments otherwise make DeepSeek return
-    # interleaved English+Chinese instead of a clean translation.
-    fragments <- gsub("[ \t\r\n]+", " ", trimmed[idx], perl = TRUE)
-    translated <- translate_vignette_texts(fragments, cfg)
-    # Preserve leading/trailing whitespace so spacing around inline <code>/<a>
-    # is retained.
-    lead <- sub("\\S.*$", "", raw[idx], perl = TRUE)
-    trail <- sub(".*\\S", "", raw[idx], perl = TRUE)
-    final <- paste0(lead, translated, trail)
+    translated <- translate_vignette_texts(texts[idx], cfg)
     for (j in seq_along(idx)) {
-      xml2::xml_text(nodes[[idx[j]]]) <- final[[j]]
+      rebuild_html_block(flats[[idx[j]]], translated[[j]])
     }
   }
 
   out <- if (is.null(cfile)) tempfile(fileext = ".html") else cfile
   xml2::write_html(doc, out)
   out
+}
+
+# Flatten one block element's direct children into a single prose string. Text
+# children become translatable pieces (whitespace runs collapsed to one space,
+# matching HTML rendering); inline children become [[INLINE:n]] markers and are
+# left untouched in the document. Nested block children are skipped here because
+# they are selected and translated as blocks themselves.
+flatten_html_block <- function(el) {
+  kids <- xml2::xml_contents(el)
+  parts <- character()
+  text_nodes <- list()
+  n_inline <- 0L
+  for (k in kids) {
+    ty <- xml2::xml_type(k)
+    if (identical(ty, "text")) {
+      collapsed <- gsub("[ \t\r\n]+", " ", xml2::xml_text(k), perl = TRUE)
+      parts <- c(parts, collapsed)
+      text_nodes[[length(text_nodes) + 1L]] <- k
+    } else if (identical(ty, "element") &&
+               xml2::xml_name(k) %in% .vignette_inline_tags) {
+      n_inline <- n_inline + 1L
+      parts <- c(parts, sprintf("[[INLINE:%d]]", n_inline))
+    }
+  }
+  list(text = paste(parts, collapse = ""), text_nodes = text_nodes)
+}
+
+# Write a translated block string back into the block's text children, in order.
+# [[INLINE:n]] markers are used only to split the translation; the inline
+# elements they represented are already in the document and are left as-is.
+rebuild_html_block <- function(flat, translated) {
+  nn <- length(flat$text_nodes)
+  if (nn == 0L) {
+    return(invisible(NULL))
+  }
+  token_pat <- "\\[\\[INLINE:[0-9]+\\]\\]"
+  m <- gregexpr(token_pat, translated, perl = TRUE)[[1L]]
+  if (m[[1L]] == -1L) {
+    pieces <- translated
+  } else {
+    lens <- attr(m, "match.length")
+    pieces <- character()
+    pos <- 1L
+    for (j in seq_along(m)) {
+      pieces <- c(pieces, substr(translated, pos, m[[j]] - 1L))
+      pos <- m[[j]] + lens[[j]]
+    }
+    pieces <- c(pieces, substr(translated, pos, nchar(translated)))
+  }
+  for (i in seq_len(nn)) {
+    val <- if (i <= length(pieces)) pieces[[i]] else ""
+    xml2::xml_text(flat$text_nodes[[i]]) <- val
+  }
+  invisible(NULL)
 }
 
 # Translate a character vector in chunks, sized by cumulative character count
