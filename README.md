@@ -1,6 +1,6 @@
 # deephelp
 
-[![Version](https://img.shields.io/badge/version-0.3.3-blue.svg)](https://github.com/Exceptions-del/deephelp)
+[![Version](https://img.shields.io/badge/version-0.3.4-blue.svg)](https://github.com/Exceptions-del/deephelp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 用 [DeepSeek](https://www.deepseek.com/) 把 R 帮助文档**即时翻译成中文**的 R 包。

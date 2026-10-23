@@ -62,7 +62,8 @@ translate_vignette_html <- function(html_file, cfg) {
     key <- md5_char(c(
       paste(readLines(html_file, warn = FALSE, encoding = "UTF-8"),
             collapse = "\n"),
-      config_hash(cfg)
+      config_hash(cfg),
+      .dh$schema
     ))
     cdir <- file.path(root, "_vignettes")
     dir.create(cdir, recursive = TRUE, showWarnings = FALSE)
@@ -94,7 +95,12 @@ translate_vignette_html <- function(html_file, cfg) {
   keep <- nzchar(trimmed)
   if (any(keep)) {
     idx <- which(keep)
-    translated <- translate_vignette_texts(trimmed[idx], cfg)
+    # HTML collapses internal whitespace (including the source line-wrapping
+    # newlines) to a single space when rendered, so normalize it before sending
+    # to the model. Raw multi-line fragments otherwise make DeepSeek return
+    # interleaved English+Chinese instead of a clean translation.
+    fragments <- gsub("[ \t\r\n]+", " ", trimmed[idx], perl = TRUE)
+    translated <- translate_vignette_texts(fragments, cfg)
     # Preserve leading/trailing whitespace so spacing around inline <code>/<a>
     # is retained.
     lead <- sub("\\S.*$", "", raw[idx], perl = TRUE)
