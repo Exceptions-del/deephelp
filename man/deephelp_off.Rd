@@ -6,6 +6,10 @@
 \usage{
 deephelp_off()
 }
+\value{
+Invisibly `FALSE`. Called for its side effect of disabling automatic
+  translation.
+}
 \description{
 Disable automatic translation of `?` and `help()`
 }

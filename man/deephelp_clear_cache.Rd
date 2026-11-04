@@ -9,6 +9,10 @@ deephelp_clear_cache(cache = NULL)
 \arguments{
 \item{cache}{Cache directory to clear. Defaults to the current cache location.}
 }
+\value{
+Invisibly `NULL`. Called for its side effect of deleting the on-disk
+  translation cache.
+}
 \description{
 Clear the translation cache
 }

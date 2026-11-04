@@ -6,6 +6,10 @@
 \usage{
 deephelp_on()
 }
+\value{
+Invisibly `TRUE`. Called for its side effect of enabling automatic
+  translation and attaching the `?`/`help()` shims.
+}
 \description{
 Enable automatic translation of `?` and `help()`
 }

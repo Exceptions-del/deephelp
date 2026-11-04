@@ -5,6 +5,9 @@
 #' @param pattern Keyword pattern to search for.
 #' @param package Optional package name to restrict the search.
 #' @param ... Passed to [utils::help.search()].
+#' @return The value returned by [utils::help.search()], an object of class
+#'   `"help_files_with_topic"` (a list including the `matches` data frame), with
+#'   the `Title` column of `matches` translated to the target language.
 #' @export
 deephelp_search <- function(pattern, package = NULL, ...) {
   cfg <- .dh$config

@@ -12,22 +12,24 @@ are environment-specific and do not occur on CRAN's check machines:
 * "PDF version of manual" (with index): the local TeX distribution (TinyTeX)
   lacks a working `makeindex`, so the indexed build fails. The LaTeX source
   compiles cleanly and the "without index" build passes.
-* "future file timestamps": the machine could not reach a time server to verify
-  the current time.
+* "CRAN incoming feasibility": the local machine could not reach github.com to
+  verify the `URL` and `BugReports` fields.
 * "top-level files": `pandoc` is not installed locally.
 * "non-standard things in the check directory": a leftover
   `deephelp-manual.tex` produced by the failed indexed build above.
 
 ## Downstream dependencies
 
-None. This is a new submission.
+None.
 
 ## Notes to CRAN maintainers
 
-* This is a resubmission (version 0.3.3) of the package. It addresses the note
-  from the previous submission (0.3.1), where software names in the `Title` and
-  `Description` fields were flagged as possible misspellings: those names
-  (`'DeepSeek'`, `'RStudio'`, `'Positron'`) are now single-quoted.
+* This is a resubmission (version 0.3.5). It addresses the notes from the
+  previous review: the maintainer now provides a full name (given name `Xing`,
+  family name `Shi`), single quotes in the `Description` are used only around
+  software names (`'DeepSeek'`, `'RStudio'`, `'Positron'`) and not around the
+  function names `?` / `help()`, and `\value{}` sections describing the return
+  value of each exported function have been added to the documentation.
 
 * The package provides a drop-in replacement for `?`, `help()`,
   `help.search()` and `vignette()`. On load it attaches a small environment of

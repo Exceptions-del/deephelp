@@ -19,6 +19,9 @@
 #' @param glossary Named character vector mapping English statistical terms to
 #'   Chinese translations. Merged over the built-in glossary; use
 #'   `character(0)` to disable the glossary entirely.
+#' @return Invisibly, the updated configuration as a named list. Called for its
+#'   side effect of updating the stored configuration and printing the new
+#'   status via [deephelp_status()].
 #' @export
 deephelp_use <- function(api_key = NULL, model = NULL, base_url = NULL,
                          lang = NULL, cache = NULL, temperature = NULL,
@@ -59,6 +62,8 @@ merge_glossary <- function(user) {
 #' @examples
 #' deephelp_status()
 #'
+#' @return Invisibly, the current configuration as a named list. Called for its
+#'   side effect of printing the configuration.
 #' @export
 deephelp_status <- function() {
   cfg <- .dh$config
@@ -89,6 +94,8 @@ deephelp_status <- function() {
 }
 
 #' Enable automatic translation of `?` and `help()`
+#' @return Invisibly `TRUE`. Called for its side effect of enabling automatic
+#'   translation and attaching the `?`/`help()` shims.
 #' @export
 deephelp_on <- function() {
   options(deephelp.enabled = TRUE)
@@ -98,6 +105,8 @@ deephelp_on <- function() {
 }
 
 #' Disable automatic translation of `?` and `help()`
+#' @return Invisibly `FALSE`. Called for its side effect of disabling automatic
+#'   translation.
 #' @export
 deephelp_off <- function() {
   options(deephelp.enabled = FALSE)
@@ -107,6 +116,8 @@ deephelp_off <- function() {
 
 #' Clear the translation cache
 #' @param cache Cache directory to clear. Defaults to the current cache location.
+#' @return Invisibly `NULL`. Called for its side effect of deleting the on-disk
+#'   translation cache.
 #' @export
 deephelp_clear_cache <- function(cache = NULL) {
   root <- cache

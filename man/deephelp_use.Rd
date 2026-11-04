@@ -45,6 +45,11 @@ Defaults to `TRUE`.}
 Chinese translations. Merged over the built-in glossary; use
 `character(0)` to disable the glossary entirely.}
 }
+\value{
+Invisibly, the updated configuration as a named list. Called for its
+  side effect of updating the stored configuration and printing the new
+  status via [deephelp_status()].
+}
 \description{
 Configure the DeepSeek backend
 }

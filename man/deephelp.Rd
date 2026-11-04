@@ -18,6 +18,12 @@ Help pane of RStudio or Positron) or `"text"` (prints plain text).}
 
 \item{...}{Currently ignored.}
 }
+\value{
+An object of class `"deephelp_topic"`, a list with components `topic`,
+  `package`, `rd` (the parsed, translated Rd object) and `type`. It has a
+  `print()` method that renders the translated help page. On error, the call
+  falls back to [utils::help()] and returns its value instead.
+}
 \description{
 Translate and display an R help page in Chinese
 }

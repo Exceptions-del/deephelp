@@ -6,9 +6,14 @@
 \usage{
 deephelp_status()
 }
+\value{
+Invisibly, the current configuration as a named list. Called for its
+  side effect of printing the configuration.
+}
 \description{
 Print the current configuration
 }
 \examples{
 deephelp_status()
+
 }

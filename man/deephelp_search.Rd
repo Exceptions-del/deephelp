@@ -13,6 +13,11 @@ deephelp_search(pattern, package = NULL, ...)
 
 \item{...}{Passed to [utils::help.search()].}
 }
+\value{
+The value returned by [utils::help.search()], an object of class
+  `"help_files_with_topic"` (a list including the `matches` data frame), with
+  the `Title` column of `matches` translated to the target language.
+}
 \description{
 Translate fuzzy help-search results (`??`, `help.search`)
 }
